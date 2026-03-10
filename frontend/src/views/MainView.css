@@ -1,0 +1,153 @@
+.main-view {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-body);
+  overflow: hidden;
+  font-family: var(--font-sans);
+  color: var(--text-main);
+}
+
+/* Header */
+.app-header {
+  height: 64px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: var(--bg-card);
+  z-index: 100;
+  position: relative;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.brand {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.5px;
+  cursor: pointer;
+  color: var(--primary-color);
+}
+
+.view-switcher {
+  display: flex;
+  background: var(--bg-body);
+  padding: 4px;
+  border-radius: 6px;
+  gap: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.switch-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  font-family: var(--font-sans);
+}
+
+.switch-btn:hover {
+  color: var(--text-main);
+}
+
+.switch-btn.active {
+  background: var(--bg-card);
+  color: var(--primary-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.workflow-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.step-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-tertiary);
+}
+
+.step-name {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.step-divider {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border-color);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-family: var(--font-mono);
+  background: var(--bg-body);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+.status-indicator.processing .dot { background: var(--primary-color); animation: pulse 1s infinite; }
+.status-indicator.completed .dot { background: #10B981; }
+.status-indicator.error .dot { background: #EF4444; }
+
+@keyframes pulse { 50% { opacity: 0.5; } }
+
+/* Content */
+.content-area {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-body);
+}
+
+.panel-wrapper {
+  height: 100%;
+  overflow: hidden;
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease, transform 0.3s ease;
+  will-change: width, opacity, transform;
+  background: var(--bg-card);
+}
+
+.panel-wrapper.left {
+  border-right: 1px solid var(--border-color);
+}
+
+.panel-wrapper.right {
+  background: var(--bg-body); /* Right panel usually contains forms/steps which might need body bg or card bg depending on design. Home used bg-body for container and bg-card for panels. */
+}
