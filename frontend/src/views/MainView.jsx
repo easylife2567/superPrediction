@@ -33,17 +33,19 @@ const MainView = () => {
     const [buildProgress, setBuildProgress] = useState(null); // 图构建进度
 
     const [systemLogs, setSystemLogs] = useState([]); // 系统日志
-    const [error, setError] = useState('');
+    const [error, setError] = useState(''); // 错误信息
 
-    // Refs
+    // Refs WebSocketysdweWEWEdsadsds【=】---------------------------0·
     const pollTimerRef = useRef(null); // 轮询定时器引用
     const graphPollTimerRef = useRef(null); // 图数据轮询定时器引用
     const currentProjectIdRef = useRef(projectId); // 当前项目ID引用
 
+    // 项目数据轮询
     useEffect(() => {
         currentProjectIdRef.current = projectData?.project_id || projectId;
     }, [projectId, projectData]);
 
+    // 系统日志添加
     const addLog = (msg) => {
         setSystemLogs((prev) => {
             const time =
@@ -54,6 +56,7 @@ const MainView = () => {
         });
     };
 
+    // 轮询停止
     const stopPolling = () => {
         if (pollTimerRef.current) {
             clearInterval(pollTimerRef.current);
@@ -69,6 +72,7 @@ const MainView = () => {
         }
     };
 
+    // 根据任务状态更新当前阶段
     const updatePhaseByStatus = (status) => {
         switch (status) {
             case 'created':
@@ -89,6 +93,7 @@ const MainView = () => {
         }
     };
 
+    // 加载完整图数据
     const loadGraph = async (graphId) => {
         setGraphLoading(true);
         addLog(`Loading full graph data: ${graphId}`);
@@ -107,6 +112,7 @@ const MainView = () => {
         }
     };
 
+    // 图数据轮询
     const fetchGraphData = async (id) => {
         try {
             const projRes = await getProject(id);
@@ -124,6 +130,7 @@ const MainView = () => {
         }
     };
 
+    // 图数据轮询
     const startGraphPolling = (id) => {
         stopGraphPolling(); // 必须在新建前清除上次的孤儿定时器
         addLog('Started polling for graph data...');
