@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Home from './views/Home';
@@ -7,8 +7,14 @@ import SimulationView from './views/SimulationView';
 import SimulationRunView from './views/SimulationRunView';
 import ReportView from './views/ReportView';
 import InteractionView from './views/InteractionView';
+import useProcessStore from './store/useProcessStore';
 
 function App() {
+  // Cleanup old sessions on app load
+  useEffect(() => {
+    useProcessStore.getState().cleanupOldSessions();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

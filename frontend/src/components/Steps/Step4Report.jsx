@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAgentLog, getConsoleLog, getReportStatus, getReport } from '../../api/report';
 import './Step4Report.css';
@@ -6,11 +6,11 @@ import './Step4Report.css';
 const Step4Report = ({
     reportId,
     simulationId,
-    systemLogs = [],
-    onGoBack,
-    onNextStep,
+    // systemLogs = [], // unused
+    // onGoBack, // unused
+    // onNextStep, // unused
     onAddLog,
-    onUpdateStatus
+    onUpdateStatus,
 }) => {
     const navigate = useNavigate();
 
@@ -29,14 +29,20 @@ const Step4Report = ({
     const rightPanelRef = useRef(null);
     const logContentRef = useRef(null);
 
-    const addLog = useCallback((msg) => {
-        onAddLog && onAddLog(msg);
-    }, [onAddLog]);
+    const addLog = useCallback(
+        (msg) => {
+            onAddLog && onAddLog(msg);
+        },
+        [onAddLog]
+    );
 
     const renderMarkdown = (content) => {
         if (!content) return '';
         let html = content.replace(/^##\s+.+\n+/, '');
-        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>');
+        html = html.replace(
+            /```(\w*)\n([\s\S]*?)```/g,
+            '<pre class="code-block"><code>$2</code></pre>'
+        );
         html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
         html = html.replace(/^#### (.+)$/gm, '<h5 class="md-h5">$1</h5>');
         html = html.replace(/^### (.+)$/gm, '<h4 class="md-h4">$1</h4>');
@@ -54,7 +60,7 @@ const Step4Report = ({
 
     const toggleSectionCollapse = (idx) => {
         if (!generatedSections[idx + 1]) return;
-        setCollapsedSections(prev => {
+        setCollapsedSections((prev) => {
             const next = new Set(prev);
             if (next.has(idx)) next.delete(idx);
             else next.add(idx);
@@ -63,7 +69,7 @@ const Step4Report = ({
     };
 
     const toggleLogExpand = (log) => {
-        setExpandedLogs(prev => {
+        setExpandedLogs((prev) => {
             const next = new Set(prev);
             if (next.has(log.timestamp)) next.delete(log.timestamp);
             else next.add(log.timestamp);
@@ -76,10 +82,10 @@ const Step4Report = ({
         try {
             const aRes = await getAgentLog(reportId, agentLogLineRef.current);
             if (aRes.success && aRes.data && aRes.data.logs?.length > 0) {
-                setAgentLogs(prev => [...prev, ...aRes.data.logs]);
+                setAgentLogs((prev) => [...prev, ...aRes.data.logs]);
                 agentLogLineRef.current = aRes.data.next_line;
 
-                aRes.data.logs.forEach(log => {
+                aRes.data.logs.forEach((log) => {
                     if (log.action === 'planning_complete' && log.details?.outline) {
                         setReportOutline(log.details.outline);
                     }
@@ -87,9 +93,9 @@ const Step4Report = ({
                         setCurrentSectionIndex(log.section_index);
                     }
                     if (log.action === 'section_complete' && log.details?.content) {
-                        setGeneratedSections(prev => ({
+                        setGeneratedSections((prev) => ({
                             ...prev,
-                            [log.section_index]: log.details.content
+                            [log.section_index]: log.details.content,
                         }));
                     }
                     if (log.action === 'report_complete' && log.details?.full_report) {
@@ -102,7 +108,7 @@ const Step4Report = ({
 
             const cRes = await getConsoleLog(reportId, consoleLogLineRef.current);
             if (cRes.success && cRes.data && cRes.data.logs?.length > 0) {
-                setConsoleLogs(prev => [...prev, ...cRes.data.logs]);
+                setConsoleLogs((prev) => [...prev, ...cRes.data.logs]);
                 consoleLogLineRef.current = cRes.data.next_line;
             }
 
@@ -119,16 +125,20 @@ const Step4Report = ({
                     const fullRes = await getReport(reportId);
                     if (fullRes.success && fullRes.data) {
                         setReportOutline(fullRes.data.outline);
-                        setGeneratedSections(fullRes.data.sections.reduce((acc, s, i) => {
-                            acc[i + 1] = s.content;
-                            return acc;
-                        }, {}));
+                        setGeneratedSections(
+                            fullRes.data.sections.reduce((acc, s, i) => {
+                                acc[i + 1] = s.content;
+                                return acc;
+                            }, {})
+                        );
                     }
                     onUpdateStatus && onUpdateStatus('success');
                     stopPolling();
                 }
             }
-        } catch (err) { }
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     const startPolling = () => {
@@ -136,7 +146,10 @@ const Step4Report = ({
         pollTimerRef.current = setInterval(fetchLogs, 2000);
     };
     const stopPolling = () => {
-        if (pollTimerRef.current) { clearInterval(pollTimerRef.current); pollTimerRef.current = null; }
+        if (pollTimerRef.current) {
+            clearInterval(pollTimerRef.current);
+            pollTimerRef.current = null;
+        }
     };
 
     useEffect(() => {
@@ -188,11 +201,24 @@ const Step4Report = ({
                                             key={idx}
                                             className={`report-section-item ${isActive ? 'is-active' : ''} ${isCompleted ? 'is-completed' : ''} ${!isCompleted && !isActive ? 'is-pending' : ''}`}
                                         >
-                                            <div className={`section-header-row ${isCompleted ? 'clickable' : ''}`} onClick={() => toggleSectionCollapse(idx)}>
-                                                <span className="section-number">{String(sIdx).padStart(2, '0')}</span>
+                                            <div
+                                                className={`section-header-row ${isCompleted ? 'clickable' : ''}`}
+                                                onClick={() => toggleSectionCollapse(idx)}
+                                            >
+                                                <span className="section-number">
+                                                    {String(sIdx).padStart(2, '0')}
+                                                </span>
                                                 <h3 className="section-title">{section.title}</h3>
                                                 {isCompleted && (
-                                                    <svg className={`collapse-icon ${isCollapsed ? 'is-collapsed' : ''}`} viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <svg
+                                                        className={`collapse-icon ${isCollapsed ? 'is-collapsed' : ''}`}
+                                                        viewBox="0 0 24 24"
+                                                        width="20"
+                                                        height="20"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                    >
                                                         <polyline points="6 9 12 15 18 9"></polyline>
                                                     </svg>
                                                 )}
@@ -201,10 +227,19 @@ const Step4Report = ({
                                             {!isCollapsed && (
                                                 <div className="section-body">
                                                     {isCompleted ? (
-                                                        <div className="generated-content" dangerouslySetInnerHTML={{ __html: renderMarkdown(generatedSections[sIdx]) }}></div>
+                                                        <div
+                                                            className="generated-content"
+                                                            dangerouslySetInnerHTML={{
+                                                                __html: renderMarkdown(
+                                                                    generatedSections[sIdx]
+                                                                ),
+                                                            }}
+                                                        ></div>
                                                     ) : isActive ? (
                                                         <div className="loading-state">
-                                                            <span className="loading-text">正在生成 {section.title}...</span>
+                                                            <span className="loading-text">
+                                                                正在生成 {section.title}...
+                                                            </span>
                                                         </div>
                                                     ) : null}
                                                 </div>
@@ -216,7 +251,11 @@ const Step4Report = ({
                         </div>
                     ) : (
                         <div className="waiting-placeholder">
-                            <div className="waiting-animation"><div className="waiting-ring"></div><div className="waiting-ring"></div><div className="waiting-ring"></div></div>
+                            <div className="waiting-animation">
+                                <div className="waiting-ring"></div>
+                                <div className="waiting-ring"></div>
+                                <div className="waiting-ring"></div>
+                            </div>
                             <span className="waiting-text">Waiting for Report Agent...</span>
                         </div>
                     )}
@@ -225,9 +264,21 @@ const Step4Report = ({
                 {/* RIGHT PANEL Workflow Details */}
                 <div className="right-panel" ref={rightPanelRef}>
                     {isComplete && (
-                        <button className="next-step-btn" onClick={() => navigate(`/interact/${simulationId}/${reportId}`)}>
+                        <button
+                            className="next-step-btn"
+                            onClick={() => navigate(`/interact/${simulationId}/${reportId}`)}
+                        >
                             <span>进入深度互动</span>
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            <svg
+                                viewBox="0 0 24 24"
+                                width="16"
+                                height="16"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
                         </button>
                     )}
 
@@ -238,24 +289,111 @@ const Step4Report = ({
                                 <div key={`${log.timestamp}-${idx}`} className="timeline-item">
                                     <div className="timeline-connector">
                                         <div className="connector-dot"></div>
-                                        {idx < agentLogs.length - 1 && <div className="connector-line"></div>}
+                                        {idx < agentLogs.length - 1 && (
+                                            <div className="connector-line"></div>
+                                        )}
                                     </div>
                                     <div className="timeline-content">
                                         <div className="timeline-header">
                                             <span className="action-label">{log.action}</span>
-                                            <span className="action-time">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                            <span className="action-time">
+                                                {new Date(log.timestamp).toLocaleTimeString()}
+                                            </span>
                                         </div>
-                                        <div className={`timeline-body ${!isExpanded ? 'collapsed' : ''}`} onClick={() => toggleLogExpand(log)}>
-                                            {log.action === 'tool_call' && <div className="tool-badge">{log.details?.tool_name}</div>}
-                                            {log.action === 'tool_result' && <div className="result-meta">Result received ({log.details?.result_length} chars)</div>}
-                                            {log.action === 'llm_response' && <div className="llm-meta">Iter: {log.details?.iteration}</div>}
+                                        <div
+                                            className={`timeline-body ${!isExpanded ? 'collapsed' : ''}`}
+                                            onClick={() => toggleLogExpand(log)}
+                                        >
+                                            {log.action === 'tool_call' && (
+                                                <>
+                                                    <div className="tool-badge">
+                                                        {log.details?.tool_name}
+                                                    </div>
+                                                    {isExpanded && log.details?.parameters && (
+                                                        <div className="log-detail-text">
+                                                            {JSON.stringify(
+                                                                log.details.parameters,
+                                                                null,
+                                                                2
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {log.action === 'tool_result' && (
+                                                <>
+                                                    <div className="result-meta">
+                                                        Result received (
+                                                        {log.details?.result_length} chars)
+                                                    </div>
+                                                    {isExpanded && log.details?.tool_result && (
+                                                        <div className="log-detail-text">
+                                                            {typeof log.details.tool_result ===
+                                                            'string'
+                                                                ? log.details.tool_result.slice(
+                                                                      0,
+                                                                      1000
+                                                                  ) +
+                                                                  (log.details.tool_result.length >
+                                                                  1000
+                                                                      ? '...'
+                                                                      : '')
+                                                                : JSON.stringify(
+                                                                      log.details.tool_result,
+                                                                      null,
+                                                                      2
+                                                                  )}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {log.action === 'llm_response' && (
+                                                <>
+                                                    <div className="llm-meta">
+                                                        Iter: {log.details?.iteration}
+                                                    </div>
+                                                    {isExpanded &&
+                                                        (log.details?.response ||
+                                                            log.details?.content) && (
+                                                            <div className="log-detail-text">
+                                                                {log.details.response ||
+                                                                    log.details.content}
+                                                            </div>
+                                                        )}
+                                                </>
+                                            )}
+
+                                            {/* Fallback for other actions like section_start, planning_complete */}
+                                            {isExpanded &&
+                                                ![
+                                                    'tool_call',
+                                                    'tool_result',
+                                                    'llm_response',
+                                                ].includes(log.action) && (
+                                                    <div className="log-detail-text">
+                                                        {log.details?.title ||
+                                                            log.details?.content ||
+                                                            log.details?.message ||
+                                                            (log.details
+                                                                ? JSON.stringify(
+                                                                      log.details,
+                                                                      null,
+                                                                      2
+                                                                  )
+                                                                : '')}
+                                                    </div>
+                                                )}
                                         </div>
                                     </div>
                                 </div>
-                            )
+                            );
                         })}
                         {agentLogs.length === 0 && !isComplete && (
-                            <div className="workflow-empty"><span>Waiting for agent activity...</span></div>
+                            <div className="workflow-empty">
+                                <span>Waiting for agent activity...</span>
+                            </div>
                         )}
                     </div>
                 </div>
