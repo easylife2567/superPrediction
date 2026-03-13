@@ -17,8 +17,12 @@ const MainView = () => {
     const navigate = useNavigate();
 
     // Store
-    const pendingUpload = useUploadStore((state) => state.pendingUpload); // 获取上传状态
-    const clearPendingUpload = useUploadStore((state) => state.clearPendingUpload); // 清除上传状态
+    const files = useUploadStore((state) => state.files);
+    const simulationRequirement = useUploadStore((state) => state.simulationRequirement);
+    const clearPendingUpload = useUploadStore((state) => state.clearPendingUpload);
+
+    // Construct a pendingUpload object to match existing logic
+    const pendingUpload = { files, simulationRequirement }; // 清除上传状态
 
     // Layout
     const [viewMode, setViewMode] = useState('split'); // 视图模式，split 或 single
